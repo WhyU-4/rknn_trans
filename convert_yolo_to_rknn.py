@@ -162,11 +162,11 @@ class YoloToRknnConverter:
             str: RKNN模型路径
         """
         try:
-            from rknn.api import RKNN
+            from rknn_toolkit2.api import RKNN
         except ImportError:
-            # 尝试备用导入路径
+            # 尝试旧版本导入路径
             try:
-                from rknn_toolkit2.api import RKNN
+                from rknn.api import RKNN
             except ImportError:
                 raise ImportError(
                     "无法导入RKNN模块。请确保已正确安装rknn-toolkit2。\n"
@@ -201,7 +201,7 @@ class YoloToRknnConverter:
             logger.info("启用量化优化...")
             ret = rknn.build(
                 do_quantization=True,
-                dataset=dataset if dataset else None,
+                dataset=dataset,
                 rknn_batch_size=1
             )
         else:
