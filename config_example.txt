@@ -1,0 +1,94 @@
+# YOLO模型转换示例配置
+
+# 这是一个示例配置文件，展示如何配置不同的转换参数
+
+## 1. 基本转换配置
+# 输入模型: yolov5s.pt
+# 输出目录: ./output
+# 图像尺寸: 640x640
+
+## 2. 高级配置选项
+
+### 2.1 图像尺寸配置
+# 常用的YOLO输入尺寸:
+# - 640x640 (YOLOv5/v8标准)
+# - 416x416 (YOLOv3/v4)
+# - 320x320 (移动端优化)
+# - 1280x1280 (高精度检测)
+
+### 2.2 ONNX配置
+# opset_version: 12 (推荐)
+# 支持的版本: 9, 10, 11, 12, 13
+# 简化模型: 推荐开启，可减小模型大小
+
+### 2.3 RKNN配置
+# 目标平台:
+# - rk3588: RK3588标准版
+# - rk3588s: RK3588S版本
+# 
+# 量化选项:
+# - 开启量化: 提高推理速度，模型更小，精度略降
+# - 关闭量化: 保持精度，但速度较慢，模型较大
+
+### 2.4 量化数据集
+# 如果需要量化，可以提供数据集文件
+# 数据集文件格式: 每行一个图像路径
+# 示例 dataset.txt:
+# /path/to/image1.jpg
+# /path/to/image2.jpg
+# /path/to/image3.jpg
+# ...
+
+## 3. 命令行示例
+
+### 示例1: 基本转换 (使用默认参数)
+# python convert_yolo_to_rknn.py --pt_model yolov5s.pt
+
+### 示例2: 自定义输出目录和图像尺寸
+# python convert_yolo_to_rknn.py --pt_model yolov5s.pt --output_dir ./models --img_size 640
+
+### 示例3: 不使用量化
+# python convert_yolo_to_rknn.py --pt_model yolov5s.pt --no_quantize
+
+### 示例4: 使用量化数据集
+# python convert_yolo_to_rknn.py --pt_model yolov5s.pt --dataset ./dataset.txt
+
+### 示例5: 针对RK3588S优化
+# python convert_yolo_to_rknn.py --pt_model yolov5s.pt --target_platform rk3588s
+
+### 示例6: 小模型优化 (320x320)
+# python convert_yolo_to_rknn.py --pt_model yolov5n.pt --img_size 320
+
+### 示例7: 大模型高精度 (1280x1280, 无量化)
+# python convert_yolo_to_rknn.py --pt_model yolov5l.pt --img_size 1280 --no_quantize
+
+## 4. 性能优化建议
+
+### 4.1 模型选择
+# - YOLOv5n/s: 适合实时应用，速度快
+# - YOLOv5m: 平衡速度和精度
+# - YOLOv5l/x: 高精度应用
+
+### 4.2 量化建议
+# - 实时检测场景: 建议开启量化
+# - 高精度要求: 建议关闭量化
+# - 提供量化数据集可提高量化模型精度
+
+### 4.3 输入尺寸建议
+# - 实时视频: 320-416
+# - 标准检测: 640
+# - 高精度: 1280
+
+## 5. 常见问题
+
+### Q1: 转换后精度下降?
+# A: 尝试关闭量化或提供高质量的量化数据集
+
+### Q2: 模型太大?
+# A: 使用较小的模型(如YOLOv5n/s)或开启量化
+
+### Q3: 推理速度慢?
+# A: 减小输入尺寸或使用量化
+
+### Q4: 内存不足?
+# A: 减小batch_size或使用较小的输入尺寸
