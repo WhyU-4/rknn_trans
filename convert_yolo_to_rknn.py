@@ -13,7 +13,6 @@ YOLO模型转换工具
     - rknn-toolkit2
 """
 
-import os
 import sys
 import argparse
 import logging
@@ -164,70 +163,70 @@ class YoloToRknnConverter:
         """
         try:
             from rknn.api import RKNN
-            
-            logger.info("=" * 60)
-            logger.info("步骤 2: ONNX模型转换为RKNN")
-            logger.info("=" * 60)
-            
-            # 创建RKNN对象
-            logger.info("初始化RKNN转换器...")
-            rknn = RKNN(verbose=True)
-            
-            # 配置RKNN
-            logger.info(f"配置目标平台: {target_platform}")
-            
-            # 加载ONNX模型
-            logger.info(f"加载ONNX模型: {self.onnx_path}")
-            ret = rknn.load_onnx(
-                model=str(self.onnx_path)
+        except ImportError:
+            # 尝试备用导入路径
+            try:
+                from rknn_toolkit2.api import RKNN
+            except ImportError:
+                raise ImportError(
+                    "无法导入RKNN模块。请确保已正确安装rknn-toolkit2。\n"
+                    "参考: https://github.com/rockchip-linux/rknn-toolkit2"
+                )
+        
+        logger.info("=" * 60)
+        logger.info("步骤 2: ONNX模型转换为RKNN")
+        logger.info("=" * 60)
+        
+        # 创建RKNN对象
+        logger.info("初始化RKNN转换器...")
+        rknn = RKNN(verbose=True)
+        
+        # 配置RKNN
+        logger.info(f"配置目标平台: {target_platform}")
+        
+        # 加载ONNX模型
+        logger.info(f"加载ONNX模型: {self.onnx_path}")
+        ret = rknn.load_onnx(
+            model=str(self.onnx_path)
+        )
+        if ret != 0:
+            raise RuntimeError("加载ONNX模型失败")
+        logger.info("✓ ONNX模型加载成功")
+        
+        # 构建RKNN模型
+        logger.info("构建RKNN模型...")
+        
+        # 配置量化参数
+        if quantize:
+            logger.info("启用量化优化...")
+            ret = rknn.build(
+                do_quantization=True,
+                dataset=dataset if dataset else None,
+                rknn_batch_size=1
             )
-            if ret != 0:
-                raise RuntimeError("加载ONNX模型失败")
-            logger.info("✓ ONNX模型加载成功")
-            
-            # 构建RKNN模型
-            logger.info("构建RKNN模型...")
-            
-            # 配置量化参数
-            if quantize:
-                logger.info("启用量化优化...")
-                ret = rknn.build(
-                    do_quantization=True,
-                    dataset=dataset if dataset else None,
-                    rknn_batch_size=1
-                )
-            else:
-                logger.info("不使用量化...")
-                ret = rknn.build(
-                    do_quantization=False,
-                    rknn_batch_size=1
-                )
-            
-            if ret != 0:
-                raise RuntimeError("构建RKNN模型失败")
-            logger.info("✓ RKNN模型构建成功")
-            
-            # 导出RKNN模型
-            logger.info(f"导出RKNN模型到: {self.rknn_path}")
-            ret = rknn.export_rknn(str(self.rknn_path))
-            if ret != 0:
-                raise RuntimeError("导出RKNN模型失败")
-            logger.info("✓ RKNN模型导出成功")
-            
-            # 释放RKNN对象
-            rknn.release()
-            
-            logger.info(f"✓ RKNN转换完成: {self.rknn_path}")
-            return str(self.rknn_path)
-            
-        except ImportError as e:
-            logger.error(f"缺少必要的库: {e}")
-            logger.error("请安装rknn-toolkit2")
-            logger.error("参考: https://github.com/rockchip-linux/rknn-toolkit2")
-            raise
-        except Exception as e:
-            logger.error(f"ONNX到RKNN转换失败: {e}")
-            raise
+        else:
+            logger.info("不使用量化...")
+            ret = rknn.build(
+                do_quantization=False,
+                rknn_batch_size=1
+            )
+        
+        if ret != 0:
+            raise RuntimeError("构建RKNN模型失败")
+        logger.info("✓ RKNN模型构建成功")
+        
+        # 导出RKNN模型
+        logger.info(f"导出RKNN模型到: {self.rknn_path}")
+        ret = rknn.export_rknn(str(self.rknn_path))
+        if ret != 0:
+            raise RuntimeError("导出RKNN模型失败")
+        logger.info("✓ RKNN模型导出成功")
+        
+        # 释放RKNN对象
+        rknn.release()
+        
+        logger.info(f"✓ RKNN转换完成: {self.rknn_path}")
+        return str(self.rknn_path)
     
     def convert(self, opset_version=12, simplify=True, target_platform='rk3588', 
                 quantize=True, dataset=None):
